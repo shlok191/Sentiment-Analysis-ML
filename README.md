@@ -83,11 +83,14 @@ Model Predictions:
 True Emotion: **Fearful** 
 
 
-## Model's Evaluated Metrics
+### Model's Evaluated Metrics
 
 Average Precision: **87%**
 Average Recall: **85%**
 F1-Score: **86% (Approximately!)**
+
+
+### Ending Notes
 
 I'd love to conclude by stating that this project was definitely a very fun one for me to implement! 
 
