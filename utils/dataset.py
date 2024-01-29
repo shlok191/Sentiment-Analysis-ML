@@ -14,7 +14,7 @@ class RavDessDataset(Dataset):
         # Initializes all important variables
 
         self.loc = "../data/"
-        self.files = self._get_wav_files(self.loc)
+        self.files, self.labels = self._get_wav_files(self.loc)
         
         self.transform = audio.transforms.MFCC()    
 
@@ -24,19 +24,24 @@ class RavDessDataset(Dataset):
         # the root directory of the dataset!
 
         file_collections = []
-        
+        file_labels = []
+
         for root, _, files in os.walk(location):
 
             for file in files:
 
                 # Found a valid file!
                 if file.endswith(".wav"):
+                    
+                    # Appends the file emotion value!
+                    file_labels.append(int(file.split('-')[2]))
                     file_collections.append(os.path.join(root, file))
         
-        return file_collections
+        return file_collections, file_labels
 
 
     def __len__(self):
+
         # Returns the length
         return len(self.files)
     
@@ -51,4 +56,4 @@ class RavDessDataset(Dataset):
         # Finally, transform the waveform with MFCC() and extract features!
         features = self.transform(waveform)
 
-        return features
+        return features, self.labels[idx]

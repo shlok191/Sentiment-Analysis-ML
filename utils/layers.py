@@ -17,22 +17,22 @@ class CNNFeatureExtractor(nn.Module):
         super().__init__()
 
         # Defining the required layers
-        self.adaptive_layer = nn.Conv1d(input_channels, adaptive_layer, kernel_size, stride)
-        self.conv_layer = nn.Conv1d(adaptive_layer, output_channels, kernel_size, padding = kernel_size // 2)
+        self.conv_layer = nn.Conv1d(input_channels, adaptive_layer, kernel_size, stride)
+        self.batch_layer = nn.BatchNorm1d(adaptive_layer, output_channels, kernel_size, padding = kernel_size // 2)
 
-        self.relu = nn.ReLU()
+        self.elu = nn.ELU()
         self.pool = nn.MaxPool1d(kernel_size = 2, stride = 2)
 
     def forward(self, x):
         
         # Initial adaptive 1D Convolution layer
-        x = self.adaptive_layer(x)
-
-        # Second (and final!) adaptive 1D Convolution layer
         x = self.conv_layer(x)
 
+        # Second (and final!) adaptive 1D Convolution layer
+        x = self.batch_layer(x)
+
         # ReLU function to introduce linearity.
-        x = self.relu(x)
+        x = self.elu(x)
 
         # Pooling operation 
         x = self.pool(x)
@@ -62,6 +62,8 @@ class LSTMClassifier(nn.Module):
 
 class EmotionDetector(nn.Module):
 
+    """ The final combined model allows us to utilize the CNNs and LSTM models to generate emotion probabilities!"""
+
     def __init__(self, cnn_input_channels, cnn_adaptive_layer, cnn_output_channels, cnn_kernel_size,
                  lstm_input_size, lstm_hidden_size, lstm_output_size):
         
@@ -69,11 +71,11 @@ class EmotionDetector(nn.Module):
 
         # CNN Feature Extractor
 
-        self.cnn_feature_extractor = CNNFeatureExtractor(
+        self.cnn_feature_extractors = CNNFeatureExtractor(
             input_channels=cnn_input_channels,
             adaptive_layer=cnn_adaptive_layer,
             output_channels=cnn_output_channels,
-            kernel_size=cnn_kernel_size
+            kernel_size=cnn_kernel_size,
         )
 
         # LSTM Classifier
@@ -84,8 +86,14 @@ class EmotionDetector(nn.Module):
             output_size=lstm_output_size
         )
 
+        # Defining the final Fully Connected Layer
+        self.FCL = nn.Linear(lstm_output_size, 8)
+
+        # Defining softMax to classify our values!
+        self.softmax = nn.Softmax(8)
+
     def forward(self, x):
-        
+
         # Forward pass through CNN Feature Extractor
         cnn_output = self.cnn_feature_extractor(x)
 
@@ -96,4 +104,7 @@ class EmotionDetector(nn.Module):
         # Forward pass through LSTM Classifier
         lstm_output = self.lstm_classifier(lstm_input)
 
-        return lstm_output
+        FCL_output = self.FCL(lstm_output)
+        softmax_output = self.softmax(FCL_output)
+
+        return softmax_output
