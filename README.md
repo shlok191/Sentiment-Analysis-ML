@@ -64,11 +64,11 @@ True Emotion: **Surprised**
 
 - [Audio 3 Representation (Click me !)](./data/dataset_song/Actor_24/03-01-03-02-01-02-24.wav)
 
-Model Predictions (Top 3):
+  Model Predictions (Top 3):
 
-**92% Happy**
-05% Surprised
-02% Angry
+  **92% Happy**
+  05% Surprised
+  02% Angry
 
 True Emotion: **Happy** 
 
