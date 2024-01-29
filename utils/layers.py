@@ -11,26 +11,26 @@ class CNNFeatureExtractor(nn.Module):
         of information from audio file represented as waveforms """
     
     def __init__(self, input_channels: int, adaptive_layer: int, output_channels: int, 
-                 kernel_size: tuple = (3, 3), stride: int = 1):
+                 kernel_size: int = 3, stride: int = 1):
 
         # Initializing the parent nn.Module!
         super().__init__()
 
         # Defining the required layers
-        self.conv_layer = nn.Conv1d(input_channels, adaptive_layer, kernel_size, stride)
-        self.batch_layer = nn.BatchNorm1d(adaptive_layer, output_channels, kernel_size, padding = kernel_size // 2)
+        self.conv_layer = nn.Conv2d(input_channels, adaptive_layer, kernel_size, stride)
+        self.batch_layer = nn.BatchNorm2d(adaptive_layer, output_channels)
 
         self.elu = nn.ELU()
-        self.pool = nn.MaxPool1d(kernel_size = 2, stride = 2)
+        self.pool = nn.MaxPool2d(kernel_size = 2, stride = 2)
 
     def forward(self, x):
-        
+
         # Initial adaptive 1D Convolution layer
         x = self.conv_layer(x)
-
+        
         # Second (and final!) adaptive 1D Convolution layer
         x = self.batch_layer(x)
-
+        
         # ReLU function to introduce linearity.
         x = self.elu(x)
 
@@ -54,7 +54,6 @@ class LSTMClassifier(nn.Module):
     def forward(self, x):
 
         # Passes through the input tensor to our model!
-
         x = self.lstm(x)
         x = self.fcl(x)
 
@@ -71,7 +70,7 @@ class EmotionDetector(nn.Module):
 
         # CNN Feature Extractor
 
-        self.cnn_feature_extractors = CNNFeatureExtractor(
+        self.cnn_feature_extractor = CNNFeatureExtractor(
             input_channels=cnn_input_channels,
             adaptive_layer=cnn_adaptive_layer,
             output_channels=cnn_output_channels,
@@ -98,11 +97,12 @@ class EmotionDetector(nn.Module):
         cnn_output = self.cnn_feature_extractor(x)
 
         # Reshape or flatten the output for LSTM
-        batch_size, _, features = cnn_output.size()
+        batch_size, features, _, _ = cnn_output.size()
         lstm_input = cnn_output.view(batch_size, -1, features)
-
+        
         # Forward pass through LSTM Classifier
-        lstm_output = self.lstm_classifier(lstm_input)
+        lstm_output, _ = self.lstm_classifier(lstm_input)
+        lstm_output = lstm_output[:, -1, :]
 
         FCL_output = self.FCL(lstm_output)
         softmax_output = self.softmax(FCL_output)
