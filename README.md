@@ -94,4 +94,4 @@ F1-Score: **86% (Approximately!)**
 
 I'd love to conclude by stating that this project was definitely a very fun one for me to implement! 
 
-I specifically implemented this for Nooks to showcase my understanding of NLP. I really, really hope that you really like this and that I can get to work with you all!
+I specifically implemented this to showcase my understanding of NLP at Addepar. I really, really hope that you really like this and that I can get to work with you all!
