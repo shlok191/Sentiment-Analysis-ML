@@ -7,13 +7,16 @@ from dataset import RavDessDataset
 
 # Defining our hyperparameters
 cnn_input_channels = 1
-cnn_adaptive_layer = 32
+cnn_hidden_channels = 32
 cnn_output_channels = 64
 cnn_kernel_size = 3
 
 lstm_input_size = 32
 lstm_hidden_size = 128
-lstm_output_size = 8  # Number of classes
+lstm_sequence_length = 11856
+lstm_output_size = 512  # Intermediate output feature size
+
+FCL_output_size = 8 # Number of classes
 
 batch_size = 32
 learning_rate = 0.001
@@ -24,12 +27,14 @@ def get_trained_model():
     # Create instances of the model, dataset, dataloaders, and loss function
     model = EmotionDetector(
         cnn_input_channels,
-        cnn_adaptive_layer,
+        cnn_hidden_channels,
         cnn_output_channels,
         cnn_kernel_size,
         lstm_input_size,
+        lstm_sequence_length,
         lstm_hidden_size,
-        lstm_output_size
+        lstm_output_size,
+        FCL_output_size
     )
 
     train_dataset = RavDessDataset('./data/', train=True)
@@ -47,9 +52,16 @@ def get_trained_model():
 
             inputs = batch[0]
             labels = batch[1]
+            
+            labels -= 1 # Making labels 0-indexed!
+
+            #print(f"Labels: {labels}")
 
             optimizer.zero_grad()
             outputs = model(inputs)
+            
+            #print(f"Outputs: {outputs}")
+
             loss = criterion(outputs, labels)
 
             loss.backward()
@@ -61,3 +73,6 @@ def get_trained_model():
         print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {average_loss:.4f}")
 
     return model
+
+if __name__ == "__main__":
+    model = get_trained_model()

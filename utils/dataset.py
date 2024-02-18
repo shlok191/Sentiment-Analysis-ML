@@ -9,12 +9,12 @@ class RavDessDataset(Dataset):
     """ A custom dataset class to load in audio files situated in the RAVDESS
     dataset!"""
 
-    def __init__(self, location="../data/", train=True, segment_length = 200000):
+    def __init__(self, location="../data/", train=True, segment_length = 250000):
 
         # Initializes all important variables
 
         self.loc = location
-        self.transform = audio.transforms.MFCC()    
+        self.transform = audio.audio.transforms.MFCC()    
         self.train = train
         self.segment_length = segment_length
 
@@ -26,6 +26,7 @@ class RavDessDataset(Dataset):
 
         # Pads the wav files to ensure uniformity in dimensions!
         waveform, _ = audio.load(location)
+
         if(waveform.size(1) < self.segment_length):
             # Increase and pad remaining size with zeroes
 
@@ -34,9 +35,10 @@ class RavDessDataset(Dataset):
 
         elif waveform.size(1) > self.segment_length:
             # Otherwise, reduce the waveform length
-
             waveform = waveform[:, :self.segment_length]
 
+        # Collapsing all channels of waveform to 1 channel
+        waveform = waveform.view()
         return waveform
     
     def _get_wav_files(self, location: str):
@@ -96,3 +98,8 @@ class RavDessDataset(Dataset):
         features = self.transform(waveform)
 
         return features, self.labels[idx]
+    
+if __name__ == "__main__":
+
+    dataset = RavDessDataset()
+    items = dataset[10]
