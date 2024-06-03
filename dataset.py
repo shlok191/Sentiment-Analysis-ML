@@ -117,7 +117,7 @@ class RAVDESSDataset(Dataset):
         # Apply MelSpectrogram transformation (converts to MFCC)
         data = self.MFCC_transform(data)
 
-        return (data, category)
+        return (data[0, :, :].unsqueeze(0), category)
 
     def pad_transform(self, X):
         """Pads the tensor to ensure uniformity in length

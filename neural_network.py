@@ -129,11 +129,9 @@ class SentimentModel(nn.Module):
 
         # Flattening out our model
         batch_size = X.size(0)
-        print(X.shape)
 
         X = X.view(batch_size, X.shape[1], -1)
 
-        print(X.shape)
         # Forward pass through LSTM
         _, (hn, _) = self.lstm(X)
         X = hn[-1]
